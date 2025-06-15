@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Trading Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0a0a0a;
+        color: #ffffff;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Layout */
+    .app {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    /* Header */
+    .header {
+        background: #1a1a1a;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+        flex-shrink: 0;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+        color: #4a9eff;
+    }
+
+    .market-info {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .market-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff00;
+    }
+
+    .status-dot.closed {
+        background: #ff4444;
+    }
+
+    /* Main Layout */
+    .main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 300px;
+        background: #141414;
+        overflow-y: auto;
+        border-right: 1px solid #333;
+        flex-shrink: 0;
+    }
+
+    .sidebar-section {
+        padding: 1rem;
+        border-bottom: 1px solid #333;
+    }
+
+    .sidebar-section h3 {
+        color: #4a9eff;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    /* Content Area */
+    .content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+    }
+
+    /* Stock Card */
+    .stock-card {
+        background: #1a1a1a;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stock-header {
+        display: flex;
+        align-items: baseline;
+        gap: 2rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .symbol-input {
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+        background: #2a2a2a;
+        border: 2px solid #4a9eff;
+        border-radius: 6px;
+        color: white;
+        width: 150px;
+        text-transform: uppercase;
+    }
+
+    .price-group {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+    }
+
+    .price {
+        font-size: 2.5rem;
+        font-weight: 300;
+    }
+
+    .change {
+        font-size: 1.2rem;
+    }
+
+    .positive {
+        color: #00ff00;
+    }
+
+    .negative {
+        color: #ff4444;
+    }
+
+    /* Stock Details */
+    .stock-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #333;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        color: #888;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 1.1rem;
+    }
+
+    /* Chart Area */
+    .chart-container {
+        background: #1a1a1a;
+        border-radius: 8px;
+        padding: 2rem;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        border: 2px dashed #333;
+        margin-bottom: 2rem;
+    }
+
+    /* Watchlist */
+    .watchlist-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: #1a1a1a;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .watchlist-item:hover {
+        background: #2a2a2a;
+    }
+
+    .watchlist-symbol {
+        font-weight: 600;
+        color: #4a9eff;
+    }
+
+    /* Screener Tabs */
+    .screener-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .screener-tab {
+        padding: 0.5rem 1rem;
+        background: #2a2a2a;
+        border: none;
+        border-radius: 6px;
+        color: #888;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.85rem;
+    }
+
+    .screener-tab.active {
+        background: #4a9eff;
+        color: white;
+    }
+
+    /* News */
+    .news-item {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: #1a1a1a;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .news-item:hover {
+        background: #2a2a2a;
+    }
+
+    .news-title {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .news-meta {
+        color: #888;
+        font-size: 0.85rem;
+    }
+
+    /* Table */
+    .data-table {
+        width: 100%;
+        background: #1a1a1a;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .data-table th {
+        background: #2a2a2a;
+        padding: 0.75rem;
+        text-align: left;
+        font-weight: 500;
+        color: #888;
+        font-size: 0.85rem;
+    }
+
+    .data-table td {
+        padding: 0.75rem;
+        border-top: 1px solid #2a2a2a;
+    }
+
+    .data-table tr:hover {
+        background: #222;
+    }
+
+    /* Loading & Error */
+    .loading {
+        color: #666;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .error {
+        color: #ff4444;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .api-badge {
+        background: #4a9eff;
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            display: none;
+        }
+        
+        .header {
+            padding: 1rem;
+        }
+        
+        .market-info {
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .content {
+            padding: 1rem;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>Options Trading Dashboard</h1>
+            <div class="market-info">
+                <span class="api-badge" id="apiBadge">Connecting...</span>
+                <div class="market-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="marketStatus">Market Open</span>
+                </div>
+                <div id="spyPrice" style="display: none;">
+                    <span style="color: #888;">SPY:</span>
+                    <span id="spyValue">Loading...</span>
+                </div>
+                <div id="clock">--:--</div>
+            </div>
+        </header>
+
+```
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Watchlist -->
+            <div class="sidebar-section">
+                <h3>Watchlist</h3>
+                <div id="watchlist">
+                    <div class="loading">Loading watchlist...</div>
+                </div>
+            </div>
+
+            <!-- Screeners -->
+            <div class="sidebar-section">
+                <h3>Screeners</h3>
+                <div class="screener-tabs">
+                    <button class="screener-tab active" data-type="movers">Movers</button>
+                    <button class="screener-tab" data-type="volume">Volume</button>
+                    <button class="screener-tab" data-type="gainers">Gainers</button>
+                </div>
+                <div id="screenerContent">
+                    <div class="loading">Loading screener...</div>
+                </div>
+            </div>
+
+            <!-- News -->
+            <div class="sidebar-section">
+                <h3>Latest News</h3>
+                <div id="newsContent">
+                    <div class="loading">Loading news...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Stock Info -->
+            <div class="stock-card">
+                <div class="stock-header">
+                    <input type="text" class="symbol-input" id="symbolInput" value="AAPL" />
+                    <div class="price-group">
+                        <span class="price" id="currentPrice">--</span>
+                        <span class="change" id="priceChange">--</span>
+                    </div>
+                </div>
+                <div class="stock-details" id="stockDetails">
+                    <div class="detail-item">
+                        <span class="detail-label">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container">
+                <div>TradingView Chart Widget Goes Here</div>
+            </div>
+
+            <!-- Error Display -->
+            <div id="errorDisplay" style="display: none;" class="stock-card">
+                <div class="error" id="errorMessage"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    // Configuration - Alpha Vantage API
+    const API_KEY = '2NQZ3QZC4RG5GW12';
+    const API_BASE = 'https://www.alphavantage.co/query';
+    
+    // App State
+    let currentSymbol = 'AAPL';
+    const watchlistSymbols = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA'];
+    let apiConnected = false;
+    let activeScreener = 'movers';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard initializing...');
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Start clock
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // Update market status
+        updateMarketStatus();
+        setInterval(updateMarketStatus, 60000);
+        
+        // Test API and load data
+        testAPIConnection();
+    });
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Symbol input
+        const symbolInput = document.getElementById('symbolInput');
+        if (symbolInput) {
+            symbolInput.addEventListener('change', handleSymbolChange);
+            symbolInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSymbolChange();
+                }
+            });
+        }
+        
+        // Screener tabs
+        document.querySelectorAll('.screener-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.screener-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                activeScreener = this.dataset.type;
+                loadScreener();
+            });
+        });
+    }
+
+    // Test API Connection
+    async function testAPIConnection() {
+        console.log('Testing Alpha Vantage API connection...');
+        updateAPIBadge('Testing...', '#ff9944');
+        
+        try {
+            const response = await fetch(`${API_BASE}?function=GLOBAL_QUOTE&symbol=AAPL&apikey=${API_KEY}`);
+            const data = await response.json();
+            
+            if (data['Global Quote'] && data['Global Quote']['05. price']) {
+                console.log('Alpha Vantage API connected successfully');
+                apiConnected = true;
+                updateAPIBadge('Alpha Vantage Connected', '#00ff00');
+                
+                // Load all data
+                loadAllData();
+                
+                // Start auto-refresh (slower for Alpha Vantage due to rate limits)
+                setInterval(loadAllData, 60000); // 1 minute intervals
+            } else if (data['Note']) {
+                throw new Error('API call frequency limit reached. Please wait.');
+            } else {
+                throw new Error('Invalid API response');
+            }
+        } catch (error) {
+            console.error('API connection failed:', error);
+            apiConnected = false;
+            updateAPIBadge('API Error', '#ff4444');
+            showError('Alpha Vantage: ' + error.message);
+            
+            // Load demo data instead
+            loadDemoData();
+        }
+    }
+
+    // Update API Badge
+    function updateAPIBadge(text, color) {
+        const badge = document.getElementById('apiBadge');
+        if (badge) {
+            badge.textContent = text;
+            badge.style.background = color;
+        }
+    }
+
+    // Load all data
+    async function loadAllData() {
+        await loadStock(currentSymbol);
+        await loadWatchlist();
+        await loadScreener();
+        await loadNews();
+        await loadSPY();
+    }
+
+    // Load stock data
+    async function loadStock(symbol) {
+        if (!apiConnected) return;
+        
+        try {
+            const response = await fetch(`${API_BASE}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`);
+            const data = await response.json();
+            
+            if (data['Note']) {
+                throw new Error('API rate limit reached. Please wait 1 minute.');
+            }
+            
+            if (data['Global Quote'] && data['Global Quote']['05. price']) {
+                updateStockDisplay(symbol, data['Global Quote']);
+                hideError();
+            } else {
+                throw new Error('No data available');
+            }
+        } catch (error) {
+            console.error('Error loading stock:', error);
+            showError(`Failed to load ${symbol}: ${error.message}`);
+        }
+    }
+
+    // Update stock display for Alpha Vantage data
+    function updateStockDisplay(symbol, quote) {
+        const priceEl = document.getElementById('currentPrice');
+        const changeEl = document.getElementById('priceChange');
+        const detailsEl = document.getElementById('stockDetails');
+        
+        if (!priceEl || !changeEl || !detailsEl) return;
+        
+        const price = parseFloat(quote['05. price']);
+        const change = parseFloat(quote['09. change']);
+        const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+        const isPositive = change >= 0;
+        
+        priceEl.textContent = `$${price.toFixed(2)}`;
+        priceEl.className = `price ${isPositive ? 'positive' : 'negative'}`;
+        
+        changeEl.textContent = `${isPositive ? '+' : ''}$${Math.abs(change).toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)`;
+        changeEl.className = `change ${isPositive ? 'positive' : 'negative'}`;
+        
+        detailsEl.innerHTML = `
+            <div class="detail-item">
+                <span class="detail-label">Open</span>
+                <span class="detail-value">$${parseFloat(quote['02. open']).toFixed(2)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">High</span>
+                <span class="detail-value">$${parseFloat(quote['03. high']).toFixed(2)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Low</span>
+                <span class="detail-value">$${parseFloat(quote['04. low']).toFixed(2)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Prev Close</span>
+                <span class="detail-value">$${parseFloat(quote['08. previous close']).toFixed(2)}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Volume</span>
+                <span class="detail-value">${(parseInt(quote['06. volume']) / 1000000).toFixed(1)}M</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Trading Day</span>
+                <span class="detail-value">${quote['07. latest trading day']}</span>
+            </div>
+        `;
+    }
+
+    // Load watchlist with rate limiting
+    async function loadWatchlist() {
+        const container = document.getElementById('watchlist');
+        if (!container) return;
+        
+        container.innerHTML = '<div class="loading">Loading watchlist (this may take a moment due to API limits)...</div>';
+        
+        // For Alpha Vantage, we need to space out requests due to rate limits
+        if (apiConnected) {
+            container.innerHTML = '';
+            for (let i = 0; i < watchlistSymbols.length; i++) {
+                const symbol = watchlistSymbols[i];
+                
+                // Add placeholder
+                const placeholder = document.createElement('div');
+                placeholder.className = 'watchlist-item';
+                placeholder.id = `watchlist-${symbol}`;
+                placeholder.innerHTML = `
+                    <span class="watchlist-symbol">${symbol}</span>
+                    <div style="text-align: right; color: #666;">Loading...</div>
+                `;
+                container.appendChild(placeholder);
+                
+                // Load data with delay
+                setTimeout(async () => {
+                    try {
+                        const response = await fetch(`${API_BASE}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`);
+                        const data = await response.json();
+                        
+                        if (data['Global Quote'] && data['Global Quote']['05. price']) {
+                            updateWatchlistItem(symbol, data['Global Quote']);
+                        }
+                    } catch (error) {
+                        console.error(`Error loading ${symbol}:`, error);
+                    }
+                }, i * 12000); // 12 second delay between requests (5 per minute limit)
+            }
+        } else {
+            // Demo data
+            container.innerHTML = '';
+            watchlistSymbols.forEach(symbol => {
+                addWatchlistItem(symbol, {
+                    price: 100 + Math.random() * 400,
+                    change: (Math.random() - 0.5) * 10,
+                    changePercent: (Math.random() - 0.5) * 5
+                }, true);
+            });
+        }
+    }
+
+    // Update watchlist item
+    function updateWatchlistItem(symbol, quote) {
+        const item = document.getElementById(`watchlist-${symbol}`);
+        if (!item) return;
+        
+        const price = parseFloat(quote['05. price']);
+        const change = parseFloat(quote['09. change']);
+        const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+        const isPositive = change >= 0;
+        
+        item.onclick = function() {
+            document.getElementById('symbolInput').value = symbol;
+            currentSymbol = symbol;
+            loadStock(symbol);
+        };
+        
+        item.innerHTML = `
+            <span class="watchlist-symbol">${symbol}</span>
+            <div style="text-align: right;">
+                <div>$${price.toFixed(2)}</div>
+                <div class="${isPositive ? 'positive' : 'negative'}" style="font-size: 0.85rem;">
+                    ${isPositive ? '+' : ''}${changePercent.toFixed(2)}%
+                </div>
+            </div>
+        `;
+    }
+
+    // Add watchlist item (for demo mode)
+    function addWatchlistItem(symbol, data, isDemo = false) {
+        const container = document.getElementById('watchlist');
+        if (!container) return;
+        
+        const item = document.createElement('div');
+        item.className = 'watchlist-item';
+        item.onclick = function() {
+            document.getElementById('symbolInput').value = symbol;
+            currentSymbol = symbol;
+            if (!isDemo) loadStock(symbol);
+        };
+        
+        const isPositive = data.change >= 0;
+        
+        item.innerHTML = `
+            <span class="watchlist-symbol">${symbol}</span>
+            <div style="text-align: right;">
+                <div>$${data.price.toFixed(2)}</div>
+                <div class="${isPositive ? 'positive' : 'negative'}" style="font-size: 0.85rem;">
+                    ${isPositive ? '+' : ''}${data.changePercent.toFixed(2)}%
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    }
+
+    // Load screener with demo data for now
+    async function loadScreener() {
+        const container = document.getElementById('screenerContent');
+        if (!container) return;
+        
+        // Demo screener data - we'll enhance this with real criteria later
+        const screenerData = {
+            movers: [
+                { symbol: 'NVDA', price: 487.20, change: 12.45, changePercent: 2.62, volume: '52.3M' },
+                { symbol: 'TSLA', price: 238.45, change: -8.32, changePercent: -3.37, volume: '98.7M' },
+                { symbol: 'AMD', price: 134.56, change: 5.23, changePercent: 4.04, volume: '45.2M' },
+                { symbol: 'META', price: 382.18, change: -6.78, changePercent: -1.74, volume: '23.5M' },
+                { symbol: 'AAPL', price: 178.45, change: 2.34, changePercent: 1.33, volume: '52.3M' }
+            ],
+            volume: [
+                { symbol: 'TSLA', price: 238.45, change: -8.32, changePercent: -3.37, volume: '98.7M', ratio: '2.3x' },
+                { symbol: 'NVDA', price: 487.20, change: 12.45, changePercent: 2.62, volume: '82.3M', ratio: '1.8x' },
+                { symbol: 'SPY', price: 452.30, change: 3.68, changePercent: 0.82, volume: '89.2M', ratio: '1.5x' },
+                { symbol: 'AAPL', price: 178.45, change: 2.34, changePercent: 1.33, volume: '72.3M', ratio: '1.4x' },
+                { symbol: 'AMD', price: 134.56, change: 5.23, changePercent: 4.04, volume: '65.2M', ratio: '1.3x' }
+            ],
+            gainers: [
+                { symbol: 'AMD', price: 134.56, change: 5.23, changePercent: 4.04, volume: '45.2M' },
+                { symbol: 'NVDA', price: 487.20, change: 12.45, changePercent: 2.62, volume: '52.3M' },
+                { symbol: 'GOOGL', price: 142.67, change: 3.21, changePercent: 2.30, volume: '31.2M' },
+                { symbol: 'AAPL', price: 178.45, change: 2.34, changePercent: 1.33, volume: '52.3M' },
+                { symbol: 'MSFT', price: 423.15, change: 3.82, changePercent: 0.91, volume: '28.1M' }
+            ]
+        };
+        
+        const currentScreener = activeScreener || 'movers';
+        const data = screenerData[currentScreener] || [];
+        
+        let html = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Price</th>
+                        <th>Change</th>
+                        ${currentScreener === 'volume' ? '<th>Volume</th><th>Ratio</th>' : '<th>Volume</th>'}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        data.forEach(stock => {
+            const isPositive = stock.change >= 0;
+            html += `
+                <tr onclick="selectStock('${stock.symbol}')" style="cursor: pointer;">
+                    <td style="color: #4a9eff; font-weight: 600;">${stock.symbol}</td>
+                    <td>$${stock.price.toFixed(2)}</td>
+                    <td class="${isPositive ? 'positive' : 'negative'}">
+                        ${isPositive ? '+' : ''}${stock.changePercent.toFixed(2)}%
+                    </td>
+                    <td>${stock.volume}</td>
+                    ${currentScreener === 'volume' ? `<td style="color: #ffd700;">${stock.ratio}</td>` : ''}
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    // Helper function to select stock from screener
+    function selectStock(symbol) {
+        document.getElementById('symbolInput').value = symbol;
+        currentSymbol = symbol;
+        loadStock(symbol);
+    }
+
+    // Remove format market cap function as Alpha Vantage doesn't provide it
+    
+    // Load news
+    async function loadNews() {
+        const container = document.getElementById('newsContent');
+        if (!container) return;
+        
+        if (apiConnected) {
+            try {
+                // Alpha Vantage news endpoint
+                const response = await fetch(`${API_BASE}?function=NEWS_SENTIMENT&tickers=AAPL,MSFT,GOOGL&apikey=${API_KEY}`);
+                const data = await response.json();
+                
+                if (data.feed && data.feed.length > 0) {
+                    container.innerHTML = '';
+                    data.feed.slice(0, 5).forEach(article => {
+                        const item = document.createElement('div');
+                        item.className = 'news-item';
+                        const publishTime = new Date(article.time_published.replace(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/, '$1-$2-$3T$4:$5:$6'));
+                        item.innerHTML = `
+                            <div class="news-title">${article.title}</div>
+                            <div class="news-meta">${article.source} • ${getTimeAgo(publishTime.getTime() / 1000)}</div>
+                        `;
+                        if (article.url) {
+                            item.onclick = () => window.open(article.url, '_blank');
+                        }
+                        container.appendChild(item);
+                    });
+                } else {
+                    throw new Error('No news data available');
+                }
+            } catch (error) {
+                console.error('Error loading news:', error);
+                // Default news for demo
+                container.innerHTML = `
+                    <div class="news-item">
+                        <div class="news-title">Market Update: Stocks Rise on Strong Earnings</div>
+                        <div class="news-meta">Reuters • 2 hours ago</div>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-title">Fed Minutes Show Cautious Approach to Rate Cuts</div>
+                        <div class="news-meta">Bloomberg • 4 hours ago</div>
+                    </div>
+                `;
+            }
+        } else {
+            // Demo news
+            container.innerHTML = `
+                <div class="news-item">
+                    <div class="news-title">Markets Rally on Strong Economic Data</div>
+                    <div class="news-meta">Reuters • 2 hours ago</div>
+                </div>
+                <div class="news-item">
+                    <div class="news-title">Fed Signals Possible Rate Pause</div>
+                    <div class="news-meta">Bloomberg • 4 hours ago</div>
+                </div>
+            `;
+        }
+    }
+
+    // Load SPY
+    async function loadSPY() {
+        if (!apiConnected) return;
+        
+        try {
+            const response = await fetch(`${API_BASE}?function=GLOBAL_QUOTE&symbol=SPY&apikey=${API_KEY}`);
+            const data = await response.json();
+            
+            if (data['Global Quote'] && data['Global Quote']['05. price']) {
+                const spyDiv = document.getElementById('spyPrice');
+                const spyValue = document.getElementById('spyValue');
+                
+                if (spyDiv && spyValue) {
+                    spyDiv.style.display = 'block';
+                    const quote = data['Global Quote'];
+                    const change = parseFloat(quote['09. change']);
+                    const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+                    const isPositive = change >= 0;
+                    
+                    spyValue.className = isPositive ? 'positive' : 'negative';
+                    spyValue.textContent = `$${parseFloat(quote['05. price']).toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)`;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading SPY:', error);
+        }
+    }
+
+    // Load all data with delays for Alpha Vantage rate limits
+    async function loadAllData() {
+        showError('Alpha Vantage Free Tier: 5 API calls/minute. Some features using demo data.');
+        await loadStock(currentSymbol);
+        setTimeout(() => loadWatchlist(), 2000);
+        setTimeout(() => loadNews(), 4000);
+        setTimeout(() => loadSPY(), 6000);
+        loadScreener(); // Load screener immediately (uses demo data)
+    }
+
+    // Handle symbol change
+    function handleSymbolChange() {
+        const input = document.getElementById('symbolInput');
+        if (input) {
+            currentSymbol = input.value.toUpperCase();
+            input.value = currentSymbol;
+            loadStock(currentSymbol);
+        }
+    }
+
+    // Update clock
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+        const clockEl = document.getElementById('clock');
+        if (clockEl) {
+            clockEl.textContent = timeStr;
+        }
+    }
+
+    // Update market status
+    function updateMarketStatus() {
+        const now = new Date();
+        const hours = now.getHours();
+        const day = now.getDay();
+        
+        const isWeekday = day >= 1 && day <= 5;
+        const isMarketHours = hours >= 9 && hours < 16;
+        const isOpen = isWeekday && isMarketHours;
+        
+        const dot = document.getElementById('statusDot');
+        const status = document.getElementById('marketStatus');
+        
+        if (dot) dot.className = isOpen ? 'status-dot' : 'status-dot closed';
+        if (status) status.textContent = isOpen ? 'Market Open' : 'Market Closed';
+    }
+
+    // Get time ago
+    function getTimeAgo(timestamp) {
+        const now = Date.now() / 1000;
+        const diff = now - timestamp;
+        
+        if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+        return `${Math.floor(diff / 86400)} days ago`;
+    }
+
+    // Show error
+    function showError(message) {
+        const errorDiv = document.getElementById('errorDisplay');
+        const errorMsg = document.getElementById('errorMessage');
+        
+        if (errorDiv && errorMsg) {
+            errorMsg.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    // Hide error
+    function hideError() {
+        const errorDiv = document.getElementById('errorDisplay');
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+
+    // Load demo data
+    function loadDemoData() {
+        console.log('Loading demo data...');
+        
+        // Demo stock display
+        updateStockDisplay('AAPL', {
+            c: 178.45,
+            d: 2.34,
+            dp: 1.33,
+            o: 176.50,
+            h: 179.20,
+            l: 175.80,
+            pc: 176.11
+        });
+        
+        // Demo watchlist
+        const watchlist = document.getElementById('watchlist');
+        if (watchlist) {
+            watchlist.innerHTML = '';
+            watchlistSymbols.forEach(symbol => {
+                addWatchlistItem(symbol, {
+                    c: 100 + Math.random() * 400,
+                    d: (Math.random() - 0.5) * 10,
+                    dp: (Math.random() - 0.5) * 5
+                });
+            });
+        }
+    }
+</script>
+```
+
+</body>
+</html>
